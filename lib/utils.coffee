@@ -170,9 +170,11 @@ Utils =
     else
       Utils.createSearchUrl string
 
+  # Determines if given string is an absolute or relative path.
   isPath: (str) ->
     (str.startsWith "/") || (str.startsWith "./") || (str == "..") || (str.startsWith "../") 
 
+  # Resolves path against given URL. 
   resolvePath: (urlString, path) ->
     return null unless @hasFullUrlPrefix urlString
 
