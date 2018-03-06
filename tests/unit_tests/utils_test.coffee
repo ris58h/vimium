@@ -50,6 +50,47 @@ context "convertToUrl",
     assert.equal "https://www.google.com/search?q=go+ogle.com", Utils.convertToUrl("go ogle.com")
     assert.equal "https://www.google.com/search?q=%40twitter", Utils.convertToUrl("@twitter")
 
+context "isPath",
+  should "accept valid paths", ->
+    assert.isTrue Utils.isPath "/"
+    assert.isTrue Utils.isPath "/path"
+    assert.isTrue Utils.isPath "./"
+    assert.isTrue Utils.isPath "./path"
+    assert.isTrue Utils.isPath ".."
+    assert.isTrue Utils.isPath "../path"
+    assert.isTrue Utils.isPath "../.."
+    assert.isTrue Utils.isPath "/path/../path"
+
+  should "reject invalid paths", ->
+    assert.isFalse Utils.isPath "http://127.0.0.1:8080"
+    assert.isFalse Utils.isPath "search query"
+    assert.isFalse Utils.isPath "..."
+    assert.isFalse Utils.isPath "..path"
+
+context "resolvePath",
+  should "resolve absolute path", ->
+    assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws", "/"
+    assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "/path"
+    assert.equal "file:///", Utils.resolvePath "file:///", "/"    
+    assert.equal "file:///path", Utils.resolvePath "file:///", "/path"    
+  should "resolve simple relative path", ->
+    assert.equal "http://8.8.8.8:80/ws", Utils.resolvePath "http://8.8.8.8:80/ws", "./"
+    assert.equal "http://8.8.8.8:80/ws", Utils.resolvePath "http://8.8.8.8:80/ws#hash", "./"
+    assert.equal "http://8.8.8.8:80/ws", Utils.resolvePath "http://8.8.8.8:80/ws?query", "./"
+    assert.equal "http://8.8.8.8:80/ws/path", Utils.resolvePath "http://8.8.8.8:80/ws", "./path"
+    assert.equal "http://8.8.8.8:80/ws/path", Utils.resolvePath "http://8.8.8.8:80/ws#hash", "./path"
+    assert.equal "http://8.8.8.8:80/ws/path", Utils.resolvePath "http://8.8.8.8:80/ws?query", "./path"
+  should "resolve 'level up' relative path", ->
+    assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws", ".."
+    assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws#hash", ".."
+    assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws?query", ".."
+    assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "../path"
+    assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws", "../.."
+  should "resolve complex relative path", ->
+    assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "/path/../path"
+    assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "./path/../../path"
+    assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "../path/../path"
+
 context "extractQuery",
   should "extract queries from search URLs", ->
     assert.equal "bbc sport 1", Utils.extractQuery "https://www.google.ie/search?q=%s", "https://www.google.ie/search?q=bbc+sport+1"

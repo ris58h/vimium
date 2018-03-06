@@ -30,6 +30,7 @@ Vomnibar =
     @vomnibarUI.setForceNewTab options.newTab
     @vomnibarUI.setQuery options.query
     @vomnibarUI.setKeyword options.keyword
+    @vomnibarUI.setUrl options.url
     @vomnibarUI.update true
 
   hide: -> @vomnibarUI?.hide()
@@ -48,6 +49,7 @@ class VomnibarUI
   setForceNewTab: (@forceNewTab) ->
   setCompleter: (@completer) -> @reset()
   setKeywords: (@keywords) ->
+  setUrl: (@url) ->
 
   # The sequence of events when the vomnibar is hidden is as follows:
   # 1. Post a "hide" message to the host page.
@@ -165,7 +167,10 @@ class VomnibarUI
         # Because the the suggestions are updated asynchronously in omni mode, the user may have typed more
         # text than that which is included in the URL associated with the primary suggestion.  Therefore, to
         # avoid a race condition, we construct the query from the actual contents of the input (query).
-        query = Utils.createSearchUrl query, @lastReponse.engine.searchUrl if isCustomSearchPrimarySuggestion
+        if isCustomSearchPrimarySuggestion
+          query = Utils.createSearchUrl query, @lastReponse.engine.searchUrl
+        else if Utils.isPath query
+          query = Utils.resolvePath(@url, query)
         @hide -> Vomnibar.getCompleter().launchUrl query, openInNewTab
       else
         completion = @completions[@selection]
@@ -192,7 +197,13 @@ class VomnibarUI
   # Return the background-page query corresponding to the current input state.  In other words, reinstate any
   # search engine keyword which is currently being suppressed, and strip any prompted text.
   getInputValueAsQuery: ->
-    (if @customSearchMode? then @customSearchMode + " " else "") + @input.value
+    trimmed = @input.value.trim()
+    if @customSearchMode?
+      @customSearchMode + " " + @input.value
+    else if Utils.isPath(trimmed) && Utils.resolvePath(@url, trimmed)
+      Utils.resolvePath(@url, trimmed)
+    else
+      @input.value
 
   updateCompletions: (callback = null) ->
     @completer.filter

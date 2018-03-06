@@ -56,7 +56,7 @@ Vomnibar =
     @init()
     # The Vomnibar cannot coexist with the help dialog (it causes focus issues).
     HelpDialog.abort()
-    @vomnibarUI.activate extend options, { name: "activate", sourceFrameId, focus: true }
+    @vomnibarUI.activate extend options, { name: "activate", sourceFrameId, focus: true, url: window.location.href }
 
 root = exports ? (window.root ?= {})
 root.Vomnibar = Vomnibar

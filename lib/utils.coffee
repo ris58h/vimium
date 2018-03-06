@@ -170,6 +170,48 @@ Utils =
     else
       Utils.createSearchUrl string
 
+  isPath: (str) ->
+    (str.startsWith "/") || (str.startsWith "./") || (str == "..") || (str.startsWith "../") 
+
+  resolvePath: (urlString, path) ->
+    return null unless @hasFullUrlPrefix urlString
+
+    urlHostIndex = (urlString.indexOf "://") + 3
+    urlPathIndex = urlString.indexOf "/", urlHostIndex
+    urlOrigin = if 0 <= urlPathIndex then urlString.substring 0, urlPathIndex else urlString
+    urlHost = urlOrigin.substring urlHostIndex
+    urlPath = if 0 <= urlPathIndex then urlString.substring(urlPathIndex + 1) else ""
+    if '#' in urlPath
+      urlPath = urlPath.substring 0, (urlPath.indexOf '#')
+    if '?' in urlPath
+      urlPath = urlPath.substring 0, (urlPath.indexOf '?')
+    
+    urlPathParts = urlPath.split "/"
+    if path == "/"
+      parts = []
+    else if path.startsWith "/"
+      parts = (path.substring 1).split "/"
+    else if path.startsWith "./"
+      pathParts = (path.substring 2).split "/"
+      parts = urlPathParts.concat pathParts
+    else if path == ".."
+      parts = urlPathParts.concat ".."
+    else if path.startsWith "../"
+      pathParts = path.split "/"
+      parts = urlPathParts.concat pathParts
+
+    resolvedParts = []
+    for part in parts
+      if 0 < part.length
+        if part == ".."
+          resolvedParts.pop() if 0 < resolvedParts.length
+        else
+          resolvedParts.push part
+    if resolvedParts.length == 0
+      if urlHost.length == 0 then urlOrigin + "/" else urlOrigin
+    else
+      urlOrigin + "/" + (resolvedParts.join "/")
+
   # detects both literals and dynamically created strings
   isString: (obj) -> typeof obj == 'string' or obj instanceof String
 
