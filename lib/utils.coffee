@@ -212,7 +212,8 @@ Utils =
     if resolvedParts.length == 0
       if urlHost.length == 0 then urlOrigin + "/" else urlOrigin
     else
-      urlOrigin + "/" + (resolvedParts.join "/")
+      trailingSlash = (path.endsWith "/") && path.length > 1 && path[path.length - 2] != "."
+      urlOrigin + "/" + (resolvedParts.join "/") + (if trailingSlash then "/" else "")
 
   # detects both literals and dynamically created strings
   isString: (obj) -> typeof obj == 'string' or obj instanceof String
