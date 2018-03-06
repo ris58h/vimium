@@ -201,6 +201,8 @@ Utils =
     else if path.startsWith "../"
       pathParts = path.split "/"
       parts = urlPathParts.concat pathParts
+    else
+      return null
 
     resolvedParts = []
     for part in parts
@@ -212,7 +214,7 @@ Utils =
     if resolvedParts.length == 0
       if urlHost.length == 0 then urlOrigin + "/" else urlOrigin
     else
-      trailingSlash = (path.endsWith "/") && path.length > 1 && path[path.length - 2] != "."
+      trailingSlash = (path.endsWith "/") && path.length > 2
       urlOrigin + "/" + (resolvedParts.join "/") + (if trailingSlash then "/" else "")
 
   # detects both literals and dynamically created strings

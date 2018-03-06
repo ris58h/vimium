@@ -93,6 +93,7 @@ context "resolvePath",
   should "preserve trailing slash in path", ->
     assert.equal "https://ftp.mozilla.org/pub/", Utils.resolvePath "https://ftp.mozilla.org/favicon.ico", "/pub/"    
     assert.equal "https://ftp.mozilla.org/pub/firefox/", Utils.resolvePath "https://ftp.mozilla.org/pub/", "./firefox/"    
+    assert.equal "https://ftp.mozilla.org/pub/", Utils.resolvePath "https://ftp.mozilla.org/pub/firefox/", "../"    
 
 context "extractQuery",
   should "extract queries from search URLs", ->
