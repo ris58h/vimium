@@ -51,7 +51,7 @@ context "convertToUrl",
     assert.equal "https://www.google.com/search?q=%40twitter", Utils.convertToUrl("@twitter")
 
 context "isPath",
-  should "accept valid paths", ->
+  should "accept simple paths", ->
     assert.isTrue Utils.isPath "/"
     assert.isTrue Utils.isPath "/path"
     assert.isTrue Utils.isPath "./"
@@ -60,6 +60,10 @@ context "isPath",
     assert.isTrue Utils.isPath "../path"
     assert.isTrue Utils.isPath "../.."
     assert.isTrue Utils.isPath "/path/../path"
+  
+  should "accept path with query params", ->
+    assert.isTrue Utils.isPath "/path?key=value&key2=value2"
+    assert.isTrue Utils.isPath "/path/?key=value&key2=value2"
 
   should "reject invalid paths", ->
     assert.isFalse Utils.isPath "http://127.0.0.1:8080"
@@ -71,8 +75,9 @@ context "resolvePath",
   should "resolve absolute path", ->
     assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws", "/"
     assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "/path"
-    assert.equal "file:///", Utils.resolvePath "file:///", "/"    
-    assert.equal "file:///path", Utils.resolvePath "file:///", "/path"    
+    assert.equal "file:///", Utils.resolvePath "file:///", "/"
+    assert.equal "file:///path", Utils.resolvePath "file:///", "/path"
+  
   should "resolve simple relative path", ->
     assert.equal "http://8.8.8.8:80/ws", Utils.resolvePath "http://8.8.8.8:80/ws", "./"
     assert.equal "http://8.8.8.8:80/ws", Utils.resolvePath "http://8.8.8.8:80/ws#hash", "./"
@@ -80,20 +85,27 @@ context "resolvePath",
     assert.equal "http://8.8.8.8:80/ws/path", Utils.resolvePath "http://8.8.8.8:80/ws", "./path"
     assert.equal "http://8.8.8.8:80/ws/path", Utils.resolvePath "http://8.8.8.8:80/ws#hash", "./path"
     assert.equal "http://8.8.8.8:80/ws/path", Utils.resolvePath "http://8.8.8.8:80/ws?query", "./path"
+
   should "resolve 'level up' relative path", ->
     assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws", ".."
     assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws#hash", ".."
     assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws?query", ".."
     assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "../path"
     assert.equal "http://8.8.8.8:80", Utils.resolvePath "http://8.8.8.8:80/ws", "../.."
+
   should "resolve complex relative path", ->
     assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "/path/../path"
     assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "./path/../../path"
     assert.equal "http://8.8.8.8:80/path", Utils.resolvePath "http://8.8.8.8:80/ws", "../path/../path"
+
   should "preserve trailing slash in path", ->
-    assert.equal "https://ftp.mozilla.org/pub/", Utils.resolvePath "https://ftp.mozilla.org/favicon.ico", "/pub/"    
-    assert.equal "https://ftp.mozilla.org/pub/firefox/", Utils.resolvePath "https://ftp.mozilla.org/pub/", "./firefox/"    
-    assert.equal "https://ftp.mozilla.org/pub/", Utils.resolvePath "https://ftp.mozilla.org/pub/firefox/", "../"    
+    assert.equal "https://ftp.mozilla.org/pub/", Utils.resolvePath "https://ftp.mozilla.org/favicon.ico", "/pub/"
+    assert.equal "https://ftp.mozilla.org/pub/firefox/", Utils.resolvePath "https://ftp.mozilla.org/pub/", "./firefox/"
+    assert.equal "https://ftp.mozilla.org/pub/", Utils.resolvePath "https://ftp.mozilla.org/pub/firefox/", "../"
+
+  should "resolve path with query params", ->
+    assert.equal "http://8.8.8.8:80/path?key=value&key2=value", Utils.resolvePath "http://8.8.8.8:80", "/path?key=value&key2=value"
+    assert.equal "http://8.8.8.8:80/path/?key=value&key2=value", Utils.resolvePath "http://8.8.8.8:80", "/path/?key=value&key2=value"
 
 context "extractQuery",
   should "extract queries from search URLs", ->
